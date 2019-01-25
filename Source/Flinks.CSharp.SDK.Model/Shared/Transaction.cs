@@ -21,7 +21,7 @@ namespace Flinks.CSharp.SDK.Model.Shared
         public double? Credit { get; set; }
 
         [JsonProperty("Balance")]
-        public double Balance { get; set; }
+        public double? Balance { get; set; }
 
         [JsonProperty("Id")]
         public Guid Id { get; set; }
