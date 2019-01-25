@@ -11,8 +11,6 @@ namespace Flinks.CSharp.SDK.Model.Authorization
             RequestId = null;
         }
 
-        [JsonProperty("Links")]
-        public List<Link> Links { get; set; }
         [JsonProperty("SecurityChallenges")]
         public List<SecurityChallenge> SecurityChallenges { get; set; }
         [JsonProperty("Login")]

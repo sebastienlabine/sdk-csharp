@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Flinks.CSharp.SDK.Model.Shared;
 using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.Account
+namespace Flinks.CSharp.SDK.Model.Shared
 {
     public class Account
     {
+        [JsonProperty("EftEligibleRatio")]
+        public long EftEligibleRatio { get; set; }
+
         [JsonProperty("Transactions")]
         public List<Transaction> Transactions { get; set; }
 

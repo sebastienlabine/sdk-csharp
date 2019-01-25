@@ -1,4 +1,4 @@
-﻿using Flinks.CSharp.SDK.Model.Account;
+﻿using Flinks.CSharp.SDK.Model.AccountDetail;
 using Newtonsoft.Json;
 
 namespace Flinks.CSharp.SDK.Model.Shared

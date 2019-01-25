@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.Account
+namespace Flinks.CSharp.SDK.Model.Shared
 {
     public class Transaction
     {

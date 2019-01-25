@@ -13,6 +13,8 @@ namespace Flinks.CSharp.SDK.Model.Shared
         public string Institution { get; set; }
         [JsonProperty("RequestId")]
         public string RequestId { get; set; }
+        [JsonProperty("Links")]
+        public List<Link> Links { get; set; }
         [JsonProperty("ValidationDetails", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, List<string>> ValidationDetails { get; set; }
     }

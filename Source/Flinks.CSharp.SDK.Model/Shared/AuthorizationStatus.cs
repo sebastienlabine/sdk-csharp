@@ -2,8 +2,9 @@
 {
     public enum AuthorizationStatus
     {
-        ERROR = 0,
-        PENDING_MFA_ANSWERS = 1,
-        AUTHORIZED = 2
+        UNKNOWN = 0,
+        ERROR = 1,
+        PENDING_MFA_ANSWERS = 2,
+        AUTHORIZED = 3
     }
 }
