@@ -17,5 +17,7 @@ namespace Flinks.CSharp.SDK.Model.Shared
         public List<Link> Links { get; set; }
         [JsonProperty("ValidationDetails", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, List<string>> ValidationDetails { get; set; }
+        [JsonProperty("Message")]
+        public string Message { get; set; }
     }
 }

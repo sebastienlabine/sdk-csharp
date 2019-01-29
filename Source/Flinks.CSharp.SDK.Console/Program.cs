@@ -24,7 +24,11 @@ namespace Flinks.CSharp.SDK.Console
 
             Thread.Sleep(1000);
 
-            MimicGetAccounteDetailFlow();
+            MimicGetAccountDetailFlow();
+
+            Thread.Sleep(1000);
+
+            MimicGetStatementsFlow();
 
             System.Console.ReadLine();
         }
@@ -58,7 +62,7 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine(JsonConvert.SerializeObject(summaryAnswer, Formatting.Indented));
         }
 
-        private static void MimicGetAccounteDetailFlow()
+        private static void MimicGetAccountDetailFlow()
         {
             var flinksClient = new FlinksClient("b3c30383-2ec5-47bd-8ad0-33982d06fe06", "https://sandbox.flinks.io");
 
@@ -86,6 +90,37 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine(JsonConvert.SerializeObject(accountDetails, Formatting.Indented));
         }
+
+        private static void MimicGetStatementsFlow()
+        {
+            var flinksClient = new FlinksClient("b3c30383-2ec5-47bd-8ad0-33982d06fe06", "https://sandbox.flinks.io");
+
+            System.Console.WriteLine("Calling Authorize...");
+
+            //Calling basic Authorize
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null);
+
+            //Pretending to be the client answering the MFA questions
+            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(response.SecurityChallenges);
+            }
+
+            System.Console.WriteLine("Answering MFA...");
+
+            //Answering MFA
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+
+
+            System.Console.WriteLine("Calling GetStatements...");
+
+            //Calling Summary
+            //var accountStatements = flinksClient.GetStatements(mfaResponse.RequestId, NumberOfStatements.Months3, null);
+            var accountStatements = flinksClient.GetStatementsAsync(mfaResponse.RequestId);
+
+            System.Console.WriteLine(JsonConvert.SerializeObject(accountStatements, Formatting.Indented));
+        }
+
 
         private static void AnswerMfaQuestion(List<SecurityChallenge> securityChallenges)
         {
