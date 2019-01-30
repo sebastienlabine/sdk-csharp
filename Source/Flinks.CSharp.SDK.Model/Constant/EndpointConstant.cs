@@ -8,5 +8,7 @@
         public const string GetAccountsDetail = "BankingServices/GetAccountsDetail ";
         public const string GetStatements = "BankingServices/GetStatements";
         public const string GetStatementsAsync = "BankingServices/GetStatementsAsync";
+        public const string SetScheduledRefresh = "BankingServices/SetScheduledRefresh";
+        public const string DeleteCard = "BankingServices/DeleteCard";
     }
 }
