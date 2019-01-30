@@ -6,6 +6,8 @@ using Flinks.CSharp.SDK.Model.AccountDetail;
 using Flinks.CSharp.SDK.Model.AccountSummary;
 using Flinks.CSharp.SDK.Model.Authorization;
 using Flinks.CSharp.SDK.Model.Constant;
+using Flinks.CSharp.SDK.Model.DeleteCard;
+using Flinks.CSharp.SDK.Model.ScheduleRefresh;
 using Flinks.CSharp.SDK.Model.Shared;
 using Flinks.CSharp.SDK.Model.Statement;
 using Newtonsoft.Json;
@@ -54,9 +56,9 @@ namespace Flinks.CSharp.SDK
         /// <param name="requestLanguage"></param>
         /// <param name="tag"></param>
         /// <returns>An AuthorizationResponse object contained information regarding the status of the authorization process.</returns>
-        public AuthorizationResponse Authorize(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, string tag = null)
+        public AuthorizationResponse Authorize(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
-            GenerateAuthorizeRequestBody(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, tag);
+            GenerateAuthorizeRequestBody(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
 
             var request = GetBaseRequest(EndpointConstant.Authorize, Method.POST);
             request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(AuthorizationBody, _jsonSerializationSettings), ParameterType.RequestBody);
@@ -209,6 +211,41 @@ namespace Flinks.CSharp.SDK
             return apiResponse;
         }
 
+        /// <summary>
+        /// Used to deactivate or activate the automatic refresh for a given loginId.
+        /// </summary>
+        /// <param name="loginId">The LoginId retrieved from a previous operation (this endpoint doesn't require an Authorize prior to use).</param>
+        /// <param name="isActivated">Enables or disables the automatic nightly refresh of a given LoginId.</param>
+        public string SetScheduledRefresh(string loginId, bool isActivated)
+        {
+            var request = GetBaseRequest(EndpointConstant.SetScheduledRefresh, Method.PATCH);
+            request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(new SetScheduleRefreshRequestBody()
+            {
+                LoginId = loginId,
+                IsActivated = isActivated.ToString().ToLower()
+            }, _jsonSerializationSettings), ParameterType.RequestBody);
+
+
+            var response = RestClient.Execute(request);
+
+            return response.Content;
+        }
+
+        /// <summary>
+        /// Used to delete all traces of information about a card in Flinks database.
+        /// </summary>
+        /// <param name="loginId">The LoginId retrieved from a previous operation (this endpoint doesn't require an Authorize prior to use).</param>
+        public DeleteCard DeleteCard(string loginId)
+        {
+            var request = GetBaseRequest($"{EndpointConstant.DeleteCard}/{loginId}", Method.DELETE);
+
+            var response = RestClient.Execute(request);
+
+            var apiResponse = JsonConvert.DeserializeObject<DeleteCard>(response.Content);
+
+            return apiResponse;
+        }
+
         #region Util
         private string GetBaseUrl()
         {
@@ -219,7 +256,7 @@ namespace Flinks.CSharp.SDK
             return baseUrl;
         }
 
-        private void GenerateAuthorizeRequestBody(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, string tag = null)
+        private void GenerateAuthorizeRequestBody(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
             AuthorizationBody = new AuthorizationRequestBody()
             {
@@ -230,6 +267,7 @@ namespace Flinks.CSharp.SDK
                 MostRecentCached = mostRecentCached?.ToString().ToLower(),
                 WithMfaQuestions = withMfaQuestions?.ToString().ToLower(),
                 Language = requestLanguage?.ToString().ToLower(),
+                ScheduleRefresh = scheduleRefresh.ToString().ToLower(),
                 Tag = tag
             };
         }
@@ -250,7 +288,7 @@ namespace Flinks.CSharp.SDK
 
         private GetStatementsRequestBody GenerateGetStatementsRequestBody(string requestId, NumberOfStatements? numberOfStatements, List<Guid> accountsFilter = null)
         {
-            return  new GetStatementsRequestBody()
+            return new GetStatementsRequestBody()
             {
                 RequestId = requestId,
                 NumberOfStatements = numberOfStatements != null ? numberOfStatements.ToString() : null,

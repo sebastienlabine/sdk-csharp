@@ -30,5 +30,7 @@ namespace Flinks.CSharp.SDK.Model.Authorization
         public string Language { get; set; }
         [JsonProperty("Tag")]
         public string Tag { get; set; }
+        [JsonProperty("ScheduleRefresh")]
+        public string ScheduleRefresh { get; set; }
     }
 }
