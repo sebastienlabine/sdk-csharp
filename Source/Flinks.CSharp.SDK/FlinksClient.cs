@@ -8,6 +8,7 @@ using Flinks.CSharp.SDK.Model.Authorization;
 using Flinks.CSharp.SDK.Model.Constant;
 using Flinks.CSharp.SDK.Model.DeleteCard;
 using Flinks.CSharp.SDK.Model.ScheduleRefresh;
+using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;
 using Flinks.CSharp.SDK.Model.Statement;
 using Newtonsoft.Json;
@@ -242,6 +243,21 @@ namespace Flinks.CSharp.SDK
             var response = RestClient.Execute(request);
 
             var apiResponse = JsonConvert.DeserializeObject<DeleteCard>(response.Content);
+
+            return apiResponse;
+        }
+
+        public ScoreResult GetScore(Guid loginId, Guid requestId, ScoreRequestBody scoreRequestBody)
+        {
+            var scoreUrl = EndpointConstant.GetScore;
+            scoreUrl = scoreUrl.Replace(FlinksSettingsConstant.LoginId, loginId.ToString()).Replace(FlinksSettingsConstant.RequestId, requestId.ToString());
+            
+            var request = GetBaseRequest(scoreUrl, Method.POST);
+            request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(scoreRequestBody, _jsonSerializationSettings), ParameterType.RequestBody);
+
+            var response = RestClient.Execute(request);
+
+            var apiResponse = JsonConvert.DeserializeObject<ScoreResult>(response.Content);
 
             return apiResponse;
         }

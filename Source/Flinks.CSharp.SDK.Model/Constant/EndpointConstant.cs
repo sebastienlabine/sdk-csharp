@@ -10,5 +10,6 @@
         public const string GetStatementsAsync = "BankingServices/GetStatementsAsync";
         public const string SetScheduledRefresh = "BankingServices/SetScheduledRefresh";
         public const string DeleteCard = "BankingServices/DeleteCard";
+        public const string GetScore = "Insight/login/{LoginId}/score/{RequestId}";
     }
 }

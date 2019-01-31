@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
 using Flinks.CSharp.SDK.Model;
 using Flinks.CSharp.SDK.Model.Authorization;
+using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;
 using Newtonsoft.Json;
 
@@ -38,11 +40,17 @@ namespace Flinks.CSharp.SDK.Console
 
             //MimicSetNightlyRefreshFlow();
 
-            System.Console.WriteLine("Using DeleteCard flow...");
+            //System.Console.WriteLine("Using DeleteCard flow...");
+
+            //Thread.Sleep(1000);
+
+            //MimicDeleteCardFlow();
+
+            System.Console.WriteLine("Using GetScore flow...");
 
             Thread.Sleep(1000);
 
-            MimicSetDeleteCardFlow();
+            MimicGetScoreFlow();
 
             System.Console.ReadLine();
         }
@@ -169,7 +177,7 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine(nightlyRefreshResponse);
         }
 
-        private static void MimicSetDeleteCardFlow()
+        private static void MimicDeleteCardFlow()
         {
             var flinksClient = new FlinksClient("b3c30383-2ec5-47bd-8ad0-33982d06fe06", "https://sandbox.flinks.io");
 
@@ -202,6 +210,68 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine(JsonConvert.SerializeObject(deletecardResponse, Formatting.Indented));
         }
+
+        private static void MimicGetScoreFlow()
+        {
+            var flinksClient = new FlinksClient("b3c30383-2ec5-47bd-8ad0-33982d06fe06", "https://sandbox.flinks.io");
+
+            System.Console.WriteLine("Calling Authorize...");
+
+            //Calling basic Authorize
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, true, null);
+
+            //Pretending to be the client answering the MFA questions
+            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(response.SecurityChallenges);
+            }
+
+            System.Console.WriteLine("Answering MFA...");
+
+            //Answering MFA
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+
+            System.Console.WriteLine("Calling GetAccountDetails...");
+
+            //Calling Summary
+            var accountDetails = flinksClient.GetAccountDetails(response.RequestId, null, null, null, null, null, null);
+
+            System.Console.WriteLine("Calling Authorize in cached mode...");
+
+            var mostRecentCacheResponse = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, true, null, null, true, null);
+
+            System.Console.WriteLine("Calling GetScore...");
+
+            var loginId = new Guid(mfaResponse.Login.Id);
+            var requestId = new Guid(mostRecentCacheResponse.RequestId);
+            var scoreRequestBody = new ScoreRequestBody()
+            {
+                LoanAmount = "1000.00",
+                UserPersonalInformation = new UserPersonalInformation()
+                {
+                    FirstName = "Nicolas",
+                    LastName = "Jourdain",
+                    Sex = Sex.Male,
+                    BirthDate = "1988-08-14",
+                    Email = "nicolas.jourdain2@gmail.com",
+                    SocialInsuranceNumber = "123456789",
+                    Address = new Address()
+                    {
+                        CivicAddress = "123 fake street",
+                        City = "Montreal",
+                        Province = "Quebec",
+                        PostalCode = "H0H0H0",
+                        Country = "Canada",
+                        PoBox = ""
+                    }
+                }
+            };
+
+            //Changing ScheduledRefresh settings
+            var scoreResults = flinksClient.GetScore(loginId, requestId, scoreRequestBody);
+
+            System.Console.WriteLine(JsonConvert.SerializeObject(scoreResults, Formatting.Indented));
+        //}
 
 
         private static void AnswerMfaQuestion(List<SecurityChallenge> securityChallenges)
