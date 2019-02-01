@@ -74,15 +74,17 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Answering MFA...");
 
-            //Answering MFA
-            var mfaResponse =
-                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var requestId = new Guid(response.RequestId);
 
+            //Answering MFA
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(requestId, response.SecurityChallenges);
 
             System.Console.WriteLine("Calling GetAccountSummary...");
 
+            var mfaRequestId = new Guid(mfaResponse.RequestId);
+
             //Calling Summary
-            var summaryAnswer = flinksClient.GetAccountSummary(mfaResponse.RequestId);
+            var summaryAnswer = flinksClient.GetAccountSummary(mfaRequestId);
 
             System.Console.WriteLine(JsonConvert.SerializeObject(summaryAnswer, Formatting.Indented));
         }
@@ -94,8 +96,7 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
-                null, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,null, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -105,16 +106,18 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Answering MFA...");
 
+            var requestId = new Guid(response.RequestId);
+
             //Answering MFA
-            var mfaResponse =
-                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(requestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountDetails...");
 
+            var mfaRequestId = new Guid(mfaResponse.RequestId);
+
             //Calling Summary
-            var accountDetails =
-                flinksClient.GetAccountDetails(mfaResponse.RequestId, null, null, null, null, null, null);
+            var accountDetails = flinksClient.GetAccountDetails(mfaRequestId, null, null, null, null, null, null);
 
             System.Console.WriteLine(JsonConvert.SerializeObject(accountDetails, Formatting.Indented));
         }
@@ -126,8 +129,7 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
-                null, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -137,16 +139,18 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Answering MFA...");
 
+            var requestId = new Guid(response.RequestId);
+
             //Answering MFA
-            var mfaResponse =
-                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =  flinksClient.AnswerMfaQuestionsAndAuthorize(requestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetStatements...");
 
+            var mfaRequestId = new Guid(mfaResponse.RequestId);
+
             //Calling Summary
-            //var accountStatements = flinksClient.GetStatements(mfaResponse.RequestId, NumberOfStatements.Months3, null);
-            var accountStatements = flinksClient.GetStatementsAsync(mfaResponse.RequestId);
+            var accountStatements = flinksClient.GetStatementsAsync(mfaRequestId);
 
             System.Console.WriteLine(JsonConvert.SerializeObject(accountStatements, Formatting.Indented));
         }
@@ -169,20 +173,25 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Answering MFA...");
 
+            var requestId = new Guid(response.RequestId);
+
             //Answering MFA
-            var mfaResponse =
-                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(requestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountDetails...");
 
+            var mfaRequestId = new Guid(mfaResponse.RequestId);
+
             //Calling GetDetails
-            var accountDetails = flinksClient.GetAccountDetails(response.RequestId, null, null, null, null, null, null);
+            var accountDetails = flinksClient.GetAccountDetails(mfaRequestId, null, null, null, null, null, null);
 
             System.Console.WriteLine("Calling SetScheduledRefresh...");
 
+            var loginId = new Guid(accountDetails.Login.Id);
+
             //Changing ScheduledRefresh settings
-            var nightlyRefreshResponse = flinksClient.SetScheduledRefresh(accountDetails.Login.Id, false);
+            var nightlyRefreshResponse = flinksClient.SetScheduledRefresh(loginId, false);
 
             System.Console.WriteLine(nightlyRefreshResponse);
         }
@@ -205,20 +214,25 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Answering MFA...");
 
+            var requestId = new Guid(response.RequestId);
+
             //Answering MFA
-            var mfaResponse =
-                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(requestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountDetails...");
 
+            var mfaRequestId = new Guid(response.RequestId);
+
             //Calling Summary
-            var accountDetails = flinksClient.GetAccountDetails(response.RequestId, null, null, null, null, null, null);
+            var accountDetails = flinksClient.GetAccountDetails(mfaRequestId, null, null, null, null, null, null);
 
             System.Console.WriteLine("Calling DeleteCard...");
 
+            var loginId = new Guid(accountDetails.Login.Id);
+
             //Changing ScheduledRefresh settings
-            var deletecardResponse = flinksClient.DeleteCard(accountDetails.Login.Id);
+            var deletecardResponse = flinksClient.DeleteCard(loginId);
 
             System.Console.WriteLine(JsonConvert.SerializeObject(deletecardResponse, Formatting.Indented));
         }
@@ -241,14 +255,17 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Answering MFA...");
 
+            var mfaRequestId = new Guid(response.RequestId);
+
             //Answering MFA
-            var mfaResponse =
-                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(mfaRequestId, response.SecurityChallenges);
 
             System.Console.WriteLine("Calling GetAccountDetails...");
 
+            var authRequestId = new Guid(response.RequestId);
+
             //Calling Summary
-            var accountDetails = flinksClient.GetAccountDetails(response.RequestId, null, null, null, null, null, null);
+            var accountDetails = flinksClient.GetAccountDetails(authRequestId, null, null, null, null, null, null);
 
             System.Console.WriteLine("Calling Authorize in cached mode...");
 
