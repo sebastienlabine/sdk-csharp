@@ -1,4 +1,5 @@
 ﻿using System;
+using Flinks.CSharp.SDK.Model.Enums;
 using Flinks.CSharp.SDK.Model.Shared;
 using Newtonsoft.Json;
 

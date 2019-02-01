@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Flinks.CSharp.SDK.Model.Statement
 {
-    public class Statements : FlinksRoot
+    public class StatementResult : FlinksRoot
     {
         [JsonProperty("StatementsByAccount")]
         public List<StatementsByAccount> StatementsByAccount { get; set; }

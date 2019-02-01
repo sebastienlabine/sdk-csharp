@@ -1,4 +1,4 @@
-﻿namespace Flinks.CSharp.SDK.Model
+﻿namespace Flinks.CSharp.SDK.Model.Enums
 {
     public enum DaysOfTransaction
     {

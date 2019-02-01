@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using Flinks.CSharp.SDK.Model;
 using Flinks.CSharp.SDK.Model.Authorization;
+using Flinks.CSharp.SDK.Model.Enums;
 using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;
 using Newtonsoft.Json;
@@ -62,7 +63,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
+                null, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -73,7 +75,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Answering MFA...");
 
             //Answering MFA
-            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =
+                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountSummary...");
@@ -91,7 +94,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
+                null, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -102,13 +106,15 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Answering MFA...");
 
             //Answering MFA
-            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =
+                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountDetails...");
 
             //Calling Summary
-            var accountDetails = flinksClient.GetAccountDetails(mfaResponse.RequestId, null, null, null, null, null, null);
+            var accountDetails =
+                flinksClient.GetAccountDetails(mfaResponse.RequestId, null, null, null, null, null, null);
 
             System.Console.WriteLine(JsonConvert.SerializeObject(accountDetails, Formatting.Indented));
         }
@@ -120,7 +126,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
+                null, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -131,7 +138,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Answering MFA...");
 
             //Answering MFA
-            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =
+                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetStatements...");
@@ -150,7 +158,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, true, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
+                null, true, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -161,7 +170,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Answering MFA...");
 
             //Answering MFA
-            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =
+                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountDetails...");
@@ -184,7 +194,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, true, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
+                null, true, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -195,7 +206,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Answering MFA...");
 
             //Answering MFA
-            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =
+                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
 
 
             System.Console.WriteLine("Calling GetAccountDetails...");
@@ -218,7 +230,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, true, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
+                null, true, null);
 
             //Pretending to be the client answering the MFA questions
             if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
@@ -229,7 +242,8 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Answering MFA...");
 
             //Answering MFA
-            var mfaResponse = flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
+            var mfaResponse =
+                flinksClient.AnswerMfaQuestionsAndAuthorize(response.RequestId, response.SecurityChallenges);
 
             System.Console.WriteLine("Calling GetAccountDetails...");
 
@@ -238,7 +252,8 @@ namespace Flinks.CSharp.SDK.Console
 
             System.Console.WriteLine("Calling Authorize in cached mode...");
 
-            var mostRecentCacheResponse = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, true, null, null, true, null);
+            var mostRecentCacheResponse = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay",
+                true, true, null, null, true, null);
 
             System.Console.WriteLine("Calling GetScore...");
 
@@ -271,7 +286,7 @@ namespace Flinks.CSharp.SDK.Console
             var scoreResults = flinksClient.GetScore(loginId, requestId, scoreRequestBody);
 
             System.Console.WriteLine(JsonConvert.SerializeObject(scoreResults, Formatting.Indented));
-        //}
+        }
 
 
         private static void AnswerMfaQuestion(List<SecurityChallenge> securityChallenges)

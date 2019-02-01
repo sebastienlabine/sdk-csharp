@@ -2,7 +2,7 @@
 
 namespace Flinks.CSharp.SDK.Model.DeleteCard
 {
-    public class DeleteCard : FlinksRoot
+    public class DeleteCardResult : FlinksRoot
     {
 
     }
