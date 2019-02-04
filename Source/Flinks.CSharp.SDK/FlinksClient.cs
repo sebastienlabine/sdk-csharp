@@ -4,7 +4,7 @@ using System.Net;
 using Flinks.CSharp.SDK.Model;
 using Flinks.CSharp.SDK.Model.AccountDetail;
 using Flinks.CSharp.SDK.Model.AccountSummary;
-using Flinks.CSharp.SDK.Model.Authorization;
+using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Constant;
 using Flinks.CSharp.SDK.Model.DeleteCard;
 using Flinks.CSharp.SDK.Model.Enums;
@@ -40,6 +40,11 @@ namespace Flinks.CSharp.SDK
         /// <param name="endpoint">Flinks client endpoint URL.</param>
         public FlinksClient(string customerId, string endpoint)
         {
+            if (string.IsNullOrEmpty(customerId) || string.IsNullOrEmpty(endpoint))
+            {
+                throw new NullReferenceException("The properties customerId and endpoint can't be null.");
+            }
+
             CustomerId = customerId;
             Endpoint = endpoint;
 
@@ -249,6 +254,13 @@ namespace Flinks.CSharp.SDK
             return apiResponse;
         }
 
+        /// <summary>
+        /// Used to retrieve a score based on the client information analyzed by Flinks.
+        /// </summary>
+        /// <param name="loginId">The LoginId of the previous authentication.</param>
+        /// <param name="requestId">The RequestId of the previous Authorize call.</param>
+        /// <param name="scoreRequestBody">The score information needed to retrieve a score from Flinks</param>
+        /// <returns></returns>
         public ScoreResult GetScore(Guid loginId, Guid requestId, ScoreRequestBody scoreRequestBody)
         {
             var scoreUrl = EndpointConstant.GetScore;

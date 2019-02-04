@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
 using Flinks.CSharp.SDK.Model;
-using Flinks.CSharp.SDK.Model.Authorization;
+using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Enums;
 using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;

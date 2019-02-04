@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.Authorization
+namespace Flinks.CSharp.SDK.Model.Authorize
 {
     public class SecurityChallenge
     {
