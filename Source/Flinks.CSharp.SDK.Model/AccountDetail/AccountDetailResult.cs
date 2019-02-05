@@ -2,9 +2,9 @@
 using Flinks.CSharp.SDK.Model.Shared;
 using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.AccountDetail
+namespace Flinks.CSharp.SDK.Model.AccountsDetail
 {
-    public class AccountDetailResult : FlinksRoot
+    public class AccountsDetailResult : FlinksRoot
     {
         [JsonProperty("Accounts")]
         public List<Account> Accounts { get; set; }
