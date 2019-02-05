@@ -25,7 +25,7 @@ namespace Flinks.CSharp.SDK
         private string BaseUrl => GetBaseUrl();
         private AuthorizationRequestBody AuthorizationBody { get; set; }
         private RestClient RestClient { get; }
-        public AuthorizationStatus AuthorizationStatus { get; set; }
+        public ClientStatus ClientStatus { get; set; }
 
         private readonly JsonSerializerSettings _jsonSerializationSettings = new JsonSerializerSettings()
         {
@@ -77,7 +77,7 @@ namespace Flinks.CSharp.SDK
 
             var apiResponse = JsonConvert.DeserializeObject<AuthorizationResult>(response.Content);
 
-            apiResponse.AuthorizationStatus = AuthorizationStatus;
+            apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
         }
@@ -90,6 +90,8 @@ namespace Flinks.CSharp.SDK
         /// <returns></returns>
         public AuthorizationResult AnswerMfaQuestionsAndAuthorize(Guid requestId, List<SecurityChallenge> securityChallenges)
         {
+            if (!ValidateCurrentAuthorizationStatusForMfaRequest()) throw new Exception($"The Authorization status has to be {ClientStatus.PENDING_MFA_ANSWERS} to call this method.");
+
             var mfaAnswers = new Dictionary<string, List<string>>();
 
             foreach (var securityChallenge in securityChallenges)
@@ -115,7 +117,7 @@ namespace Flinks.CSharp.SDK
 
             var apiResponse = JsonConvert.DeserializeObject<AuthorizationResult>(response.Content);
 
-            apiResponse.AuthorizationStatus = AuthorizationStatus;
+            apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
         }
@@ -139,7 +141,7 @@ namespace Flinks.CSharp.SDK
 
             var apiResponse = JsonConvert.DeserializeObject<AccountSummaryResult>(response.Content);
 
-            apiResponse.AuthorizationStatus = AuthorizationStatus;
+            apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
         }
@@ -172,7 +174,7 @@ namespace Flinks.CSharp.SDK
 
             var apiResponse = JsonConvert.DeserializeObject<AccountDetailResult>(response.Content);
 
-            apiResponse.AuthorizationStatus = AuthorizationStatus;
+            apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
         }
@@ -196,7 +198,7 @@ namespace Flinks.CSharp.SDK
 
             var apiResponse = JsonConvert.DeserializeObject<StatementResult>(response.Content);
 
-            apiResponse.AuthorizationStatus = AuthorizationStatus;
+            apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
         }
@@ -214,7 +216,7 @@ namespace Flinks.CSharp.SDK
 
             var apiResponse = JsonConvert.DeserializeObject<StatementResult>(response.Content);
 
-            apiResponse.AuthorizationStatus = AuthorizationStatus;
+            apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
         }
@@ -265,7 +267,7 @@ namespace Flinks.CSharp.SDK
         {
             var scoreUrl = EndpointConstant.GetScore;
             scoreUrl = scoreUrl.Replace(FlinksSettingsConstant.LoginId, loginId.ToString()).Replace(FlinksSettingsConstant.RequestId, requestId.ToString());
-            
+
             var request = GetBaseRequest(scoreUrl, Method.POST);
             request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(scoreRequestBody, _jsonSerializationSettings), ParameterType.RequestBody);
 
@@ -337,32 +339,43 @@ namespace Flinks.CSharp.SDK
 
         private void SetClientAuthorizationStatus(HttpStatusCode httpStatusCode)
         {
-            var authorizationStatus = AuthorizationStatus.UNKNOWN;
+            ClientStatus clientStatus;
 
             switch (httpStatusCode)
             {
                 case NonAuthoritativeInformation:
                     {
-                        authorizationStatus = AuthorizationStatus.PENDING_MFA_ANSWERS;
+                        clientStatus = ClientStatus.PENDING_MFA_ANSWERS;
 
                         break;
                     }
                 case OK:
                     {
-                        authorizationStatus = AuthorizationStatus.AUTHORIZED;
+                        clientStatus = ClientStatus.AUTHORIZED;
+
+                        break;
+                    }
+                case Unauthorized:
+                    {
+                        clientStatus = ClientStatus.UNAUTHORIZED;
 
                         break;
                     }
 
                 default:
                     {
-                        authorizationStatus = AuthorizationStatus.UNKNOWN;
+                        clientStatus = ClientStatus.UNKNOWN;
 
                         break;
                     }
             }
 
-            AuthorizationStatus = authorizationStatus;
+            ClientStatus = clientStatus;
+        }
+
+        private bool ValidateCurrentAuthorizationStatusForMfaRequest()
+        {
+            return ClientStatus == ClientStatus.PENDING_MFA_ANSWERS;
         }
         #endregion
     }

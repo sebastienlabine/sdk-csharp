@@ -7,7 +7,7 @@ namespace Flinks.CSharp.SDK.Model.Shared
     public class FlinksRoot
     {
         [JsonIgnore]
-        public AuthorizationStatus AuthorizationStatus { get; set; }
+        public ClientStatus ClientStatus { get; set; }
         [JsonProperty("HttpStatusCode", NullValueHandling = NullValueHandling.Ignore)]
         public int HttpStatusCode { get; set; }
         [JsonProperty("Institution")]

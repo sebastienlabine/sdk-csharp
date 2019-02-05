@@ -63,11 +63,10 @@ namespace Flinks.CSharp.SDK.Console
             System.Console.WriteLine("Calling Authorize...");
 
             //Calling basic Authorize
-            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,
-                null, null);
+            var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, null, null);
 
             //Pretending to be the client answering the MFA questions
-            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            if (response.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
             {
                 AnswerMfaQuestion(response.SecurityChallenges);
             }
@@ -99,7 +98,7 @@ namespace Flinks.CSharp.SDK.Console
             var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null,null, null);
 
             //Pretending to be the client answering the MFA questions
-            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            if (response.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
             {
                 AnswerMfaQuestion(response.SecurityChallenges);
             }
@@ -132,7 +131,7 @@ namespace Flinks.CSharp.SDK.Console
             var response = flinksClient.Authorize(Institution.FlinksCapital, "GreatDay", "EveryDay", true, null, null, null, null);
 
             //Pretending to be the client answering the MFA questions
-            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            if (response.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
             {
                 AnswerMfaQuestion(response.SecurityChallenges);
             }
@@ -166,7 +165,7 @@ namespace Flinks.CSharp.SDK.Console
                 null, true, null);
 
             //Pretending to be the client answering the MFA questions
-            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            if (response.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
             {
                 AnswerMfaQuestion(response.SecurityChallenges);
             }
@@ -207,7 +206,7 @@ namespace Flinks.CSharp.SDK.Console
                 null, true, null);
 
             //Pretending to be the client answering the MFA questions
-            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            if (response.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
             {
                 AnswerMfaQuestion(response.SecurityChallenges);
             }
@@ -248,7 +247,7 @@ namespace Flinks.CSharp.SDK.Console
                 null, true, null);
 
             //Pretending to be the client answering the MFA questions
-            if (response.AuthorizationStatus == AuthorizationStatus.PENDING_MFA_ANSWERS)
+            if (response.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
             {
                 AnswerMfaQuestion(response.SecurityChallenges);
             }

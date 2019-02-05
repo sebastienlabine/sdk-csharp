@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FlinksClientTest.cs" />
+    <Compile Include="FlinksTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +74,10 @@
     <Analyzer Include="..\..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Flinks.CSharp.SDK.Model\Flinks.CSharp.SDK.Model.csproj">
+      <Project>{72751db2-d77d-43d6-a858-dd81ac26a441}</Project>
+      <Name>Flinks.CSharp.SDK.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Flinks.CSharp.SDK\Flinks.CSharp.SDK.csproj">
       <Project>{4f9f1d21-f629-4c88-b7be-e17bfe25f020}</Project>
       <Name>Flinks.CSharp.SDK</Name>
