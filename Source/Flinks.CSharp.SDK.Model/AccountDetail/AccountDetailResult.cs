@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Flinks.CSharp.SDK.Model.AccountDetail
 {
-    public class AccountDetailResult : FlinksRoot
+    public class AccountsDetailResult : FlinksRoot
     {
         [JsonProperty("Accounts")]
         public List<Account> Accounts { get; set; }
