@@ -2,7 +2,7 @@
 using Flinks.CSharp.SDK.Model.Shared;
 using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.AccountDetail
+namespace Flinks.CSharp.SDK.Model.AccountsDetail
 {
     public class AccountsDetailResult : FlinksRoot
     {
