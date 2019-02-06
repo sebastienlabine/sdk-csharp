@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Flinks.CSharp.SDK.Model.AccountDetail
@@ -18,6 +19,6 @@ namespace Flinks.CSharp.SDK.Model.AccountDetail
         [JsonProperty("DaysOfTransaction")]
         public string DaysOfTransaction { get; set; }
         [JsonProperty("AccountsFilter")]
-        public List<string> AccountsFilter { get; set; }
+        public List<Guid> AccountsFilter { get; set; }
     }
 }

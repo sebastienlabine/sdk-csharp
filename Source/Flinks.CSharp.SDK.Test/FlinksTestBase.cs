@@ -65,5 +65,21 @@ namespace Flinks.CSharp.SDK.Test
                 }
             }
         }
+
+        public static bool IsSecurityChallengeInFrench(List<SecurityChallenge> securityChallenges)
+        {
+            foreach (var challenge in securityChallenges)
+            {
+                if (challenge.Prompt.Contains("Où") || challenge.Prompt.Contains("Quel") || challenge.Prompt.Contains("Quelle"))
+                {
+                    return true;
+                }
+
+                
+            }
+
+            return false;
+        }
+
     }
 }

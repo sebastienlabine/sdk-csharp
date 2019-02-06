@@ -20,5 +20,7 @@ namespace Flinks.CSharp.SDK.Model.Shared
         public Dictionary<string, List<string>> ValidationDetails { get; set; }
         [JsonProperty("Message")]
         public string Message { get; set; }
+        [JsonProperty("Tag")]
+        public string Tag { get; set; }
     }
 }

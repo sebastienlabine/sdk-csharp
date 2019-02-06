@@ -90,7 +90,7 @@ namespace Flinks.CSharp.SDK
         /// <returns></returns>
         public AuthorizationResult AnswerMfaQuestionsAndAuthorize(Guid requestId, List<SecurityChallenge> securityChallenges)
         {
-            if (!ValidateCurrentAuthorizationStatusForMfaRequest()) throw new Exception($"The Authorization status has to be {ClientStatus.PENDING_MFA_ANSWERS} to call this method.");
+            if (!IsClientStatusWaitingForMfaQuestions()) throw new Exception($"The Authorization status has to be {ClientStatus.PENDING_MFA_ANSWERS} to call this method.");
 
             var mfaAnswers = new Dictionary<string, List<string>>();
 
@@ -129,6 +129,8 @@ namespace Flinks.CSharp.SDK
         /// <returns></returns>
         public AccountSummaryResult GetAccountSummary(Guid requestId)
         {
+            if(!IsClientStatusAuthorized()) throw new Exception($"You can't call GetAccountsSummary when the ClientStatus is not Authorized, you current status is: {ClientStatus}.");
+
             var request = GetBaseRequest(EndpointConstant.GetAccountsSummary, Method.POST);
             request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(new AuthorizationRequestBody()
             {
@@ -162,8 +164,10 @@ namespace Flinks.CSharp.SDK
         /// <param name="daysOfTransaction">Set the number of days of transaction you want to display (set to Days90 by default).</param>
         /// <param name="accountsFilter">Filters the accounts returned in the response by adding the unique identifier we provided in the response of the GetAccountsSummary or previously called GetAccountDetails.</param>
         /// <returns></returns>
-        public AccountDetailResult GetAccountDetails(Guid requestId, bool? withAccountIdentity, bool? withKyc, bool? withTransactions, bool? withBalance, DaysOfTransaction? daysOfTransaction, List<string> accountsFilter = null)
+        public AccountDetailResult GetAccountDetails(Guid requestId, bool? withAccountIdentity, bool? withKyc, bool? withTransactions, bool? withBalance, DaysOfTransaction? daysOfTransaction, List<Guid> accountsFilter = null)
         {
+            if (!IsClientStatusAuthorized()) throw new Exception($"You can't call GetAccountsSummary when the ClientStatus is not Authorized, you current status is: {ClientStatus}.");
+
             var request = GetBaseRequest(EndpointConstant.GetAccountsDetail, Method.POST);
 
             var getAccountDetailsRequestBody = GenerateGetAccountsDetailRequestBody(requestId, withAccountIdentity, withKyc, withTransactions, withBalance, daysOfTransaction, accountsFilter);
@@ -304,7 +308,7 @@ namespace Flinks.CSharp.SDK
             };
         }
 
-        private GetAccountDetailRequestBody GenerateGetAccountsDetailRequestBody(Guid requestId, bool? withAccountIdentity, bool? withKyc, bool? withTransactions, bool? withBalance, DaysOfTransaction? daysOfTransaction, List<string> accountsFilter = null)
+        private GetAccountDetailRequestBody GenerateGetAccountsDetailRequestBody(Guid requestId, bool? withAccountIdentity, bool? withKyc, bool? withTransactions, bool? withBalance, DaysOfTransaction? daysOfTransaction, List<Guid> accountsFilter = null)
         {
             return new GetAccountDetailRequestBody()
             {
@@ -373,9 +377,14 @@ namespace Flinks.CSharp.SDK
             ClientStatus = clientStatus;
         }
 
-        private bool ValidateCurrentAuthorizationStatusForMfaRequest()
+        private bool IsClientStatusWaitingForMfaQuestions()
         {
             return ClientStatus == ClientStatus.PENDING_MFA_ANSWERS;
+        }
+
+        private bool IsClientStatusAuthorized()
+        {
+            return ClientStatus == ClientStatus.AUTHORIZED;
         }
         #endregion
     }
