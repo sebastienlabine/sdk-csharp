@@ -81,7 +81,7 @@ namespace Flinks.CSharp.SDK.Test
 
         [Theory]
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
-        public void Should_Authorize_and_set_nigthly_refresh_for_card(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        public void Should_Authorize_and_set_nightly_refresh_for_card(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
