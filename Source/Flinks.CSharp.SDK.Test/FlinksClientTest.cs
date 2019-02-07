@@ -87,9 +87,34 @@ namespace Flinks.CSharp.SDK.Test
 
             var authorizeResult = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, null, true, tag);
 
-            Assert.Equal(203, authorizeResult.HttpStatusCode);
-            Assert.Equal(ClientStatus.PENDING_MFA_ANSWERS, apiClient.ClientStatus);
-            Assert.NotEmpty(authorizeResult.SecurityChallenges);
+            if (authorizeResult.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResult.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResult.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResult.SecurityChallenges);
+
+            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+
+            var deleteCardMessage = apiClient.DeleteCard(loginId);
+
+            var authorizeResultForNightlyRefreshVerification = apiClient.Authorize(institution, userName, password, true, mostRecentCached, withMfaQuestions, null, true, tag);
+
+            if (authorizeResult.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResultForNightlyRefreshVerification.SecurityChallenges);
+            }
+
+            var requestIdForNightlyRefreshVerification = new Guid(authorizeResultForNightlyRefreshVerification.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification = apiClient.AnswerMfaQuestionsAndAuthorize(requestIdForNightlyRefreshVerification, authorizeResultForNightlyRefreshVerification.SecurityChallenges);
+
+            //Assert.Equal(true.ToString(), answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification.Login.IsScheduledRefresh);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+            Assert.NotEmpty(answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification.SecurityChallenges);
         }
 
         [Theory]
