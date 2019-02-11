@@ -1,8 +1,10 @@
 ﻿using Xunit;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Enums;
+using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;
 
 namespace Flinks.CSharp.SDK.Test
@@ -79,7 +81,7 @@ namespace Flinks.CSharp.SDK.Test
             Assert.NotEmpty(authorizeResult.SecurityChallenges);
         }
 
-        [Theory]
+        [Theory(Skip = "On Sandbox this feature is disabled.")]
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_Authorize_and_set_nightly_refresh_for_card(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
@@ -459,5 +461,309 @@ namespace Flinks.CSharp.SDK.Test
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_throw_an_exception_when_trying_to_call_GetStatements_passing_Months12_and_not_accountList(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            Assert.Throws<Exception>(() => apiClient.GetStatements(new Guid(), NumberOfStatements.Months12, null));
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_throw_an_exception_when_trying_to_call_GetStatements_passing_Months12_and_accountList_has_more_than_one_entry(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            Assert.Throws<Exception>(() => apiClient.GetStatements(new Guid(), NumberOfStatements.Months12, new List<Guid>()
+            {
+                new Guid(),
+                new Guid()
+            }));
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_call_GetStatements_and_retrieve_the_statements(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var statementResult = apiClient.GetStatements(requestId, null, null);
+
+            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_call_GetStatements_and_retrieve_the_statements_setting_up_number_of_statements_as_Month3(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+
+            var statementResult = apiClient.GetStatements(requestId, NumberOfStatements.Months3, null);
+
+
+            Assert.Equal(3, statementResult.StatementsByAccount[0].Statements.Count);
+            Assert.Equal(3, statementResult.StatementsByAccount[1].Statements.Count);
+            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_call_GetStatements_and_retrieve_the_statements_setting_up_number_of_statements_as_Month3_with_account_filter(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var accountId = new Guid("769278c5-b34c-49ab-f9b4-08d5ca4e3b3d");
+
+            var statementResult = apiClient.GetStatements(requestId, NumberOfStatements.Months3, new List<Guid>()
+            {
+                accountId
+            });
+
+
+            Assert.Equal(3, statementResult.StatementsByAccount.FirstOrDefault()?.Statements.Count);
+            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_call_GetStatements_and_retrieve_the_statements_setting_up_number_of_statements_as_Month12(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var accountId = new Guid("769278c5-b34c-49ab-f9b4-08d5ca4e3b3d");
+
+            var statementResult = apiClient.GetStatements(requestId, NumberOfStatements.Months12, new List<Guid>()
+            {
+                accountId
+            });
+
+            
+            Assert.Equal(12, statementResult.StatementsByAccount.FirstOrDefault()?.Statements.Count);
+            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_call_GetStatementsAsync_and_retrieve_the_statements(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var accountId = new Guid("769278c5-b34c-49ab-f9b4-08d5ca4e3b3d");
+
+            apiClient.GetStatements(requestId, NumberOfStatements.Months12, new List<Guid>()
+            {
+                accountId
+            });
+
+            var statementResult = apiClient.GetStatementsAsync(requestId);
+
+            Assert.Equal(12, statementResult.StatementsByAccount.FirstOrDefault()?.Statements.Count);
+            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_schedule_refresh_of_an_account(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+
+            var getAccountsDetailResult = apiClient.SetScheduledRefresh(loginId, true);
+
+            Assert.Contains($"{loginId} has now been activated for automatic refresh", getAccountsDetailResult);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_deactivate_schedule_refresh_of_an_account(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+
+            var scheduledRefreshResult = apiClient.SetScheduledRefresh(loginId, false);
+
+            Assert.Contains($"{loginId} has now been deactivated for automatic refresh", scheduledRefreshResult);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_delete_a_card(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
+
+            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+
+            var deleteCardResult = apiClient.DeleteCard(loginId);
+
+            Assert.Equal($"All of the information about LoginId {loginId} has been removed", deleteCardResult.Message);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_get_a_score(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, true, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
+
+            var authorizeResponseInCachedMode = apiClient.Authorize(institution, userName, password, null, true, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            var scoreRequestId = new Guid(authorizeResponseInCachedMode.RequestId);
+
+            var loginId = new Guid(authorizeResponseInCachedMode.Login.Id);
+
+            var scoreRequestBody = new ScoreRequestBody()
+            {
+                LoanAmount = "1000.00",
+                UserPersonalInformation = new UserPersonalInformation()
+                {
+                    FirstName = "Nicolas",
+                    LastName = "Jourdain",
+                    Sex = Sex.Male,
+                    BirthDate = "1988-08-14",
+                    Email = "nicolas.jourdain2@gmail.com",
+                    SocialInsuranceNumber = "123456789",
+                    Address = new Address()
+                    {
+                        CivicAddress = "123 fake street",
+                        City = "Montreal",
+                        Province = "Quebec",
+                        PostalCode = "H0H0H0",
+                        Country = "Canada",
+                        PoBox = ""
+                    }
+                }
+            };
+
+            var scoreResult = apiClient.GetScore(loginId, scoreRequestId, scoreRequestBody);
+
+            Assert.NotNull(scoreResult.Score);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
     }
 }
+

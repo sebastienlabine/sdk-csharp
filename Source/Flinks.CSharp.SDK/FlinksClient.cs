@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Flinks.CSharp.SDK.Model;
 using Flinks.CSharp.SDK.Model.AccountDetail;
@@ -212,6 +213,8 @@ namespace Flinks.CSharp.SDK
         /// <returns>Returns an object containing the base64 bytes of the bank official statements file.</returns>
         public StatementResult GetStatements(Guid requestId, NumberOfStatements? numberOfStatements, List<Guid> accountsFilter)
         {
+            IsGetStatementValid(numberOfStatements, accountsFilter);
+
             var request = GetBaseRequest(EndpointConstant.GetStatements, Method.POST);
 
             var getStatementsRequestBody = GenerateGetStatementsRequestBody(requestId, numberOfStatements, accountsFilter);
@@ -225,7 +228,7 @@ namespace Flinks.CSharp.SDK
             apiResponse.ClientStatus = ClientStatus;
 
             return apiResponse;
-        }
+        }    
 
         /// <summary>
         /// Method used to retrieve statements when the process is sent to a long poll job. Use it when receiving OPERATION_PENDING as result from the GetStatements method.
@@ -405,6 +408,22 @@ namespace Flinks.CSharp.SDK
         private bool IsClientStatusAuthorized()
         {
             return ClientStatus == ClientStatus.AUTHORIZED;
+        }
+
+        private static void IsGetStatementValid(NumberOfStatements? numberOfStatements, List<Guid> accountsFilter)
+        {
+            if (numberOfStatements != null && numberOfStatements == NumberOfStatements.Months12)
+            {
+                if (accountsFilter == null)
+                {
+                    throw new Exception("When using NumberOfStatements as Months12, the accounts filter can't be null.");
+                }
+
+                if (accountsFilter.Count == 0 || accountsFilter.Count >= 2)
+                {
+                    throw new Exception("When using NumberOfStatements as Months12, you have to provide a single accountId on accountsFilter.");
+                }
+            }
         }
         #endregion
     }
