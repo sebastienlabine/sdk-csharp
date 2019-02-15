@@ -44,6 +44,31 @@ namespace Flinks.CSharp.SDK.Test
 
         [Theory]
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
+        public void Should_Authorize_using_cached_flow_(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizationResult = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+            
+            if (authorizationResult.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizationResult.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizationResult.RequestId);
+
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizationResult.SecurityChallenges);
+
+            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+
+            var mostRecentCachedAuthorizationResult = apiClient.Authorize(loginId);
+
+            Assert.Equal(200, mostRecentCachedAuthorizationResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_Authorize_and_not_retrieve_mfa_questions_from_api_with_when_using_MostRecentCached(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
             var apiClient = new FlinksClient(CustomerId, Endpoint);
