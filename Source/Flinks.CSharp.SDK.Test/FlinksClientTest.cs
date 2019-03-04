@@ -18,6 +18,32 @@ namespace Flinks.CSharp.SDK.Test
             Assert.Throws<NullReferenceException>(() => new FlinksClient(customerId, endpoint));
         }
 
+        [Fact(Skip = "On Sandbox this feature is disabled.")]
+        public void Should_retrieve_an_auth_token()
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var secretKey = "I am an auth token";
+
+            var response = apiClient.GenerateAuthorizeToken(secretKey);
+
+            Assert.Equal(200, response.HttpStatusCode);
+            Assert.NotNull(response.Token);
+        }
+
+        [Fact]
+        public void Should_return_an_error_when_sending_wrong_secret_when_trying_to_get_an_auth_token()
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authToken = "I am an wrong auth token";
+
+            var response = apiClient.GenerateAuthorizeToken(authToken);
+
+            Assert.Equal(401, response.HttpStatusCode);
+            Assert.Equal("UNAUTHORIZED", response.FlinksCode);
+        }
+
         [Theory]
         [MemberData(nameof(AuthorizeTestWrongPassword.TestData), MemberType = typeof(AuthorizeTestWrongPassword))]
         public void Should_Authorize_and_receive_an_not_authorized_response_from_the_api(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
