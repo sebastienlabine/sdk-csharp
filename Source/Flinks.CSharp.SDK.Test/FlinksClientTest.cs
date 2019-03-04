@@ -70,7 +70,7 @@ namespace Flinks.CSharp.SDK.Test
 
         [Theory]
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
-        public void Should_Authorize_using_cached_flow_(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
+        public void Should_Authorize_using_cached_flow(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
