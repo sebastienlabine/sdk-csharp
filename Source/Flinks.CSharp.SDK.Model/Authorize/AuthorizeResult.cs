@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 
 namespace Flinks.CSharp.SDK.Model.Authorize
 {
-    public class AuthorizationResult : FlinksRoot
+    public class AuthorizeResult : FlinksRoot
     {
-        public AuthorizationResult()
+        public AuthorizeResult()
         {
             RequestId = null;
         }
