@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Flinks.CSharp.SDK.Model.Authorize
 {
-    public class GenerateAuthTokenResult : FlinksRoot
+    public class AuthTokenResult : FlinksRoot
     {
         [JsonProperty("FlinksCode")]
         public string FlinksCode { get; set; }

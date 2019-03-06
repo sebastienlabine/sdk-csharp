@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.ScheduleRefresh
+namespace Flinks.CSharp.SDK.Model.SetScheduleRefresh
 {
-    public class SetScheduleRefreshRequestBody
+    public class ScheduleRefreshRequestBody
     {
         [JsonProperty("LoginId")]
         public string LoginId { get; set; }

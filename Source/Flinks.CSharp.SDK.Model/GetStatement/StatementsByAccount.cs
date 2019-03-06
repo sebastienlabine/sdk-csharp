@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.Statement
+namespace Flinks.CSharp.SDK.Model.GetStatement
 {
     public class StatementsByAccount
     {

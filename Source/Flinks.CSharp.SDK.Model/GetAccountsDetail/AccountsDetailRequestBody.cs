@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Flinks.CSharp.SDK.Model.AccountDetail
+namespace Flinks.CSharp.SDK.Model.GetAccountsDetail
 {
-    public class GetAccountDetailRequestBody
+    public class AccountsDetailRequestBody
     {
         [JsonProperty("RequestId")]
         public string RequestId { get; set; }
