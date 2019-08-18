@@ -651,8 +651,6 @@ namespace Flinks.CSharp.SDK.Test
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_call_GetStatements_and_retrieve_the_statements_setting_up_number_of_statements_as_Month12(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
-            if (save != null && save == false) return;
-
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
@@ -664,7 +662,7 @@ namespace Flinks.CSharp.SDK.Test
 
             var requestId = new Guid(authorizeResponse.RequestId);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
 
             var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null);
 
@@ -676,19 +674,28 @@ namespace Flinks.CSharp.SDK.Test
             {
                 var accountId = (Guid) firstAccountId;
 
-                var requestIdAndApiClient = AuthorizeFlow(institution, userName, password, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag); 
-                
-                statementResult = requestIdAndApiClient.Item2.GetStatements(requestIdAndApiClient.Item1, NumberOfStatements.Months12, new List<Guid>()
+                var apiClientForStatement = new FlinksClient(CustomerId, Endpoint);
+
+                var authorizeResponseForStatement = apiClientForStatement.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+                if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+                {
+                    AnswerMfaQuestion(authorizeResponseForStatement.SecurityChallenges);
+                }
+
+                var requestIdForStatements = new Guid(authorizeResponseForStatement.RequestId);
+
+                apiClientForStatement.AnswerMfaQuestionsAndAuthorize(requestIdForStatements, authorizeResponseForStatement.SecurityChallenges);
+
+                statementResult = apiClientForStatement.GetStatements(requestIdForStatements, NumberOfStatements.Months12, new List<Guid>()
                 {
                     accountId
                 });
             }
 
-            //TODO: fix
-            //Assert.Equal(12, statementResult.StatementsByAccount.FirstOrDefault()?.Statements.Count);
-            //Assert.NotNull(statementResult.StatementsByAccount);
-            //Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
-            //Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+            Assert.Equal(12, statementResult?.StatementsByAccount.FirstOrDefault()?.Statements.Count);
+            Assert.NotNull(statementResult?.StatementsByAccount);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
        
