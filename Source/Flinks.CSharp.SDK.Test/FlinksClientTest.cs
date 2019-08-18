@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Enums;
+using Flinks.CSharp.SDK.Model.GetAccountsDetail;
 using Flinks.CSharp.SDK.Model.GetStatement;
 using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;
@@ -290,7 +291,6 @@ namespace Flinks.CSharp.SDK.Test
 
             var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
 
-            //TODO: fix
             Assert.NotNull(getAccountsDetailResult.Accounts);
             Assert.NotNull(getAccountsDetailResult.Login);
             Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
@@ -451,6 +451,8 @@ namespace Flinks.CSharp.SDK.Test
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_retrieve_GetAccountsDetailResult_with_account_filter(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
+            if (save != null && save == false) return;
+
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
@@ -466,33 +468,41 @@ namespace Flinks.CSharp.SDK.Test
 
             var getAccountSummaryResult = apiClient.GetAccountSummary(requestId);
 
+            AccountsDetailResult getAccountsDetailResponseWithAccountFilterResult = null;
+
             if (getAccountSummaryResult != null)
             {
                 var accountId = (Guid)getAccountSummaryResult.Accounts.First().Id;
 
-                var secondAuthorize = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+                var apiClientForAccountFilter = new FlinksClient(CustomerId, Endpoint);
 
-                if (secondAuthorize.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+                var authorizeResponseForAccountFilter = apiClientForAccountFilter.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+                if (authorizeResponseForAccountFilter.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
                 {
-                    AnswerMfaQuestion(secondAuthorize.SecurityChallenges);
+                    AnswerMfaQuestion(authorizeResponseForAccountFilter.SecurityChallenges);
                 }
 
-                var requestId2 = new Guid(secondAuthorize.RequestId);
+                var requestIdForAccountFilter = new Guid(authorizeResponseForAccountFilter.RequestId);
 
-                apiClient.AnswerMfaQuestionsAndAuthorize(requestId2, secondAuthorize.SecurityChallenges);
+                apiClientForAccountFilter.AnswerMfaQuestionsAndAuthorize(requestIdForAccountFilter, authorizeResponse.SecurityChallenges);
 
-                var getAccountsDetailResult = apiClient.GetAccountDetails(requestId2, null, null, null, null, null, new List<Guid>()
-                {
-                    accountId
-                });
-
-                //TODO: Fix
-                //Assert.True(getAccountsDetailResult.Accounts.Count < 2);
-                //Assert.NotNull(getAccountsDetailResult.Accounts);
-                //Assert.NotNull(getAccountsDetailResult.Login);
-                //Assert.Equal(requestId2.ToString(), getAccountsDetailResult.RequestId);
+                getAccountsDetailResponseWithAccountFilterResult = apiClientForAccountFilter.GetAccountDetails(
+                    requestIdForAccountFilter, 
+                    null, 
+                    null, 
+                    null, 
+                    null, 
+                    null, 
+                    new List<Guid>()
+                    {
+                        accountId
+                    });
             }
 
+            Assert.True(getAccountsDetailResponseWithAccountFilterResult?.Accounts.Count < 2);
+            Assert.NotNull(getAccountsDetailResponseWithAccountFilterResult.Accounts);
+            Assert.NotNull(getAccountsDetailResponseWithAccountFilterResult.Login);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
