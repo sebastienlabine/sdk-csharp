@@ -705,6 +705,7 @@ namespace Flinks.CSharp.SDK.Test
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_call_GetStatementsAsync_and_retrieve_the_statements(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
+            //TODO: fix
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
@@ -716,28 +717,36 @@ namespace Flinks.CSharp.SDK.Test
 
             var requestId = new Guid(authorizeResponse.RequestId);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
 
             var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null);
 
-            var firstAccountId = getAccountsDetailResult.Accounts.FirstOrDefault()?.Id;
+            var firstAccountId = getAccountsDetailResult?.Accounts?.FirstOrDefault()?.Id;
 
             StatementResult statementResult = null;
 
-            //TODO: fix
-            //if (firstAccountId != null)
-            //{
-            //    var apiClientForStatement = AuthorizeFlow(institution, userName, password, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+            if (firstAccountId != null)
+            {
+                var accountId = (Guid)firstAccountId;
 
-            //    var accountId = (Guid)firstAccountId;
+                var apiClientForStatement = new FlinksClient(CustomerId, Endpoint);
 
-            //    apiClientForStatement.GetStatements(requestId, NumberOfStatements.Months12, new List<Guid>()
-            //    {
-            //        accountId
-            //    });
+                var authorizeResponseForStatement = apiClientForStatement.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
 
-            //    statementResult = apiClientForStatement.GetStatementsAsync(requestId);
-            //}
+                if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+                {
+                    AnswerMfaQuestion(authorizeResponseForStatement.SecurityChallenges);
+                }
+
+                var requestIdForStatements = new Guid(authorizeResponseForStatement.RequestId);
+
+                apiClientForStatement.AnswerMfaQuestionsAndAuthorize(requestIdForStatements, authorizeResponseForStatement.SecurityChallenges);
+
+                statementResult = apiClientForStatement.GetStatements(requestIdForStatements, null, new List<Guid>()
+                {
+                    accountId
+                });
+            }
 
             //Assert.Equal(12, statementResult.StatementsByAccount.FirstOrDefault()?.Statements.Count);
             //Assert.NotNull(statementResult.StatementsByAccount);
@@ -777,6 +786,8 @@ namespace Flinks.CSharp.SDK.Test
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_deactivate_schedule_refresh_of_an_account(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
+            if (save != null && save == false) return;
+
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
@@ -794,10 +805,9 @@ namespace Flinks.CSharp.SDK.Test
 
             var scheduledRefreshResult = apiClient.SetScheduledRefresh(loginId, false);
 
-            //TODO: fix
-            //Assert.Contains($"{loginId} has now been deactivated for automatic refresh", scheduledRefreshResult);
-            //Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
-            //Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+            Assert.Contains($"{loginId} has now been deactivated for automatic refresh", scheduledRefreshResult);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
         [Theory]
