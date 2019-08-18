@@ -273,6 +273,8 @@ namespace Flinks.CSharp.SDK.Test
         [MemberData(nameof(AuthorizeTest.TestData), MemberType = typeof(AuthorizeTest))]
         public void Should_retrieve_GetAccountsDetailResult(string institution, string userName, string password, bool? save, bool? mostRecentCached, bool? withMfaQuestions, RequestLanguage? requestLanguage, bool? scheduleRefresh, string tag = null)
         {
+            if (save != null && save == false) return;
+
             var apiClient = new FlinksClient(CustomerId, Endpoint);
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
@@ -289,11 +291,11 @@ namespace Flinks.CSharp.SDK.Test
             var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
 
             //TODO: fix
-            //Assert.NotNull(getAccountsDetailResult.Accounts);
-            //Assert.NotNull(getAccountsDetailResult.Login);
-            //Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
-            //Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
-            //Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+            Assert.NotNull(getAccountsDetailResult.Accounts);
+            Assert.NotNull(getAccountsDetailResult.Login);
+            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
         [Theory]
