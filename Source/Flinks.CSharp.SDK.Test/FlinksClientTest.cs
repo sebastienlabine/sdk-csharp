@@ -483,7 +483,7 @@ namespace Flinks.CSharp.SDK.Test
 
                 var requestIdForAccountFilter = new Guid(authorizeResponseForAccountFilter.RequestId);
 
-                apiClientForAccountFilter.AnswerMfaQuestionsAndAuthorize(requestIdForAccountFilter, authorizeResponse.SecurityChallenges);
+                apiClientForAccountFilter.AnswerMfaQuestionsAndAuthorize(requestIdForAccountFilter, authorizeResponseForAccountFilter.SecurityChallenges);
 
                 getAccountsDetailResponseWithAccountFilterResult = apiClientForAccountFilter.GetAccountDetails(
                     requestIdForAccountFilter, 
