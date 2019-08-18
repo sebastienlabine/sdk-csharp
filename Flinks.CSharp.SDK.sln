@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flinks.CSharp.SDK", "Source
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flinks.CSharp.SDK.Test", "Source\Flinks.CSharp.SDK.Test\Flinks.CSharp.SDK.Test.csproj", "{42BCE8D1-4EBB-4A21-86C0-5AF734428432}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flinks.CSharp.SDK.FlowManager", "Source\Flinks.CSharp.SDK.FlowManager\Flinks.CSharp.SDK.FlowManager.csproj", "{8E6045C1-9E7F-4636-8512-1A6026E138F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{42BCE8D1-4EBB-4A21-86C0-5AF734428432}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42BCE8D1-4EBB-4A21-86C0-5AF734428432}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42BCE8D1-4EBB-4A21-86C0-5AF734428432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E6045C1-9E7F-4636-8512-1A6026E138F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E6045C1-9E7F-4636-8512-1A6026E138F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E6045C1-9E7F-4636-8512-1A6026E138F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E6045C1-9E7F-4636-8512-1A6026E138F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

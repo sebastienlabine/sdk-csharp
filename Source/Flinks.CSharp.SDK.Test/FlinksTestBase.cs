@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Enums;
+using Flinks.CSharp.SDK.Model.Shared;
 
 namespace Flinks.CSharp.SDK.Test
 {
@@ -79,6 +81,33 @@ namespace Flinks.CSharp.SDK.Test
             }
 
             return false;
+        }
+
+        public Tuple<Guid, FlinksClient> AuthorizeFlow(
+            string institution, 
+            string userName, 
+            string password, 
+            bool? mostRecentCached, 
+            bool? withMfaQuestions, 
+            RequestLanguage? requestLanguage, 
+            bool? scheduleRefresh, 
+            string tag)
+        {
+            var apiClient = new FlinksClient(CustomerId, Endpoint);
+
+            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached,
+                withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+            {
+                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
+            }
+
+            var requestId = new Guid(authorizeResponse.RequestId);
+
+            var authorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+
+            return new Tuple<Guid, FlinksClient>(new Guid(authorizeResult.RequestId), apiClient);
         }
 
     }
