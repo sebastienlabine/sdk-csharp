@@ -236,12 +236,10 @@ namespace Flinks.CSharp.SDK.Test
 
             var getSummaryResult = apiClient.GetAccountSummary(requestId);
 
-            //TODO: fix
-            //Assert.NotNull(getSummaryResult.Accounts);
-            //Assert.NotNull(getSummaryResult.Login);
-            //Assert.Equal(requestId.ToString(), getSummaryResult.RequestId);
-            //Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
-            //Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
+            Assert.NotNull(getSummaryResult.Accounts);
+            Assert.Equal(requestId.ToString(), getSummaryResult.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
         [Theory]
