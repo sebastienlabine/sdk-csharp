@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Flinks.CSharp.Console")]
+[assembly: AssemblyTitle("Flinks.CSharp.SDK.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Flinks.CSharp.Console")]
+[assembly: AssemblyProduct("Flinks.CSharp.SDK.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("474710b6-cff9-4178-8399-2456b3258b7c")]
+[assembly: Guid("42bce8d1-4ebb-4a21-86c0-5af734428432")]
 
 // Version information for an assembly consists of the following four values:
 //
