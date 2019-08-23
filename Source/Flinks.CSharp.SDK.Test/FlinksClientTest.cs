@@ -1,10 +1,15 @@
-﻿using Xunit;
+﻿// - This Source Code Form is subject to the terms of the Mozilla Public
+// - License, v. 2.0. If a copy of the MPL was not distributed with this
+// - file, You can obtain one at https://mozilla.org/MPL/2.0/.
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Flinks.CSharp.SDK.Model.Authorize;
+using Flinks.CSharp.SDK.Model.DeleteCard;
 using Flinks.CSharp.SDK.Model.Enums;
 using Flinks.CSharp.SDK.Model.GetAccountsDetail;
+using Flinks.CSharp.SDK.Model.GetAccountsSummary;
 using Flinks.CSharp.SDK.Model.GetStatement;
 using Flinks.CSharp.SDK.Model.Score;
 using Flinks.CSharp.SDK.Model.Shared;
@@ -86,15 +91,18 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizationResult.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizationResult.RequestId);
+            AuthorizeResult mostRecentCachedAuthorizationResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizationResult.SecurityChallenges);
+            if (authorizationResult.RequestId != null)
+            {
+                var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizationResult.RequestId, authorizationResult.SecurityChallenges);
 
-            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+                var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
 
-            var mostRecentCachedAuthorizationResult = apiClient.Authorize(loginId);
+                mostRecentCachedAuthorizationResult = apiClient.Authorize(loginId);
+            }
 
-            Assert.Equal(200, mostRecentCachedAuthorizationResult.HttpStatusCode);
+            Assert.Equal(200, mostRecentCachedAuthorizationResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -138,13 +146,14 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResult.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResult.RequestId);
+            if (authorizeResult.RequestId != null)
+            {
+                var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResult.RequestId, authorizeResult.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResult.SecurityChallenges);
+                var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
 
-            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
-
-            var deleteCardMessage = apiClient.DeleteCard(loginId);
+                var deleteCardMessage = apiClient.DeleteCard(loginId);
+            }
 
             var authorizeResultForNightlyRefreshVerification = apiClient.Authorize(institution, userName, password, true, mostRecentCached, withMfaQuestions, null, true, tag);
 
@@ -153,14 +162,16 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResultForNightlyRefreshVerification.SecurityChallenges);
             }
 
-            var requestIdForNightlyRefreshVerification = new Guid(authorizeResultForNightlyRefreshVerification.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification = null;
 
-            var answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification = apiClient.AnswerMfaQuestionsAndAuthorize(requestIdForNightlyRefreshVerification, authorizeResultForNightlyRefreshVerification.SecurityChallenges);
+            if (authorizeResultForNightlyRefreshVerification.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResultForNightlyRefreshVerification.RequestId, authorizeResultForNightlyRefreshVerification.SecurityChallenges);
+            }
 
-            //Assert.Equal(true.ToString(), answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification.Login.IsScheduledRefresh);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification.HttpStatusCode);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
-            Assert.NotEmpty(answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification.SecurityChallenges);
+            Assert.NotEmpty(answerMfaQuestionsAndAuthorizeResultForNightlyRefreshVerification?.SecurityChallenges ?? throw new InvalidOperationException("Security Challenges can't be null."));
         }
 
         [Theory]
@@ -192,12 +203,15 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
+            }
 
-            Assert.Equal(requestId.ToString(), answerMfaQuestionsAndAuthorizeResult.RequestId);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(authorizeResponse.RequestId, answerMfaQuestionsAndAuthorizeResult?.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -209,11 +223,13 @@ namespace Flinks.CSharp.SDK.Test
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, new List<SecurityChallenge>());
+            }
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, new List<SecurityChallenge>());
-
-            Assert.Equal(203, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(203, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.PENDING_MFA_ANSWERS, apiClient.ClientStatus);
         }
 
@@ -230,15 +246,19 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsSummaryResult getSummaryResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var getSummaryResult = apiClient.GetAccountSummary(requestId);
+                getSummaryResult = apiClient.GetAccountSummary((Guid)authorizeResponse.RequestId);
+            }
 
             Assert.NotNull(getSummaryResult.Accounts);
-            Assert.Equal(requestId.ToString(), getSummaryResult.RequestId);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal(authorizeResponse.RequestId, getSummaryResult.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -250,7 +270,12 @@ namespace Flinks.CSharp.SDK.Test
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            var requestId = Guid.Empty;
+
+            if (authorizeResponse.RequestId != null)
+            {
+                requestId = (Guid)authorizeResponse.RequestId;
+            }
 
             Assert.Throws<Exception>(() => apiClient.GetAccountSummary(requestId));
         }
@@ -263,7 +288,12 @@ namespace Flinks.CSharp.SDK.Test
 
             var authorizeResponse = apiClient.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            var requestId = Guid.Empty;
+
+            if (authorizeResponse.RequestId != null)
+            {
+                requestId = (Guid)authorizeResponse.RequestId;
+            }
 
             Assert.Throws<Exception>(() => apiClient.GetAccountDetails(requestId, null, null, null, null, null, null));
         }
@@ -283,15 +313,19 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsDetailResult getAccountsDetailResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
+                getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, null, null, null);
+            }
 
-            Assert.NotNull(getAccountsDetailResult.Accounts);
+            Assert.NotNull(getAccountsDetailResult?.Accounts);
             Assert.NotNull(getAccountsDetailResult.Login);
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
+            Assert.Equal((Guid)authorizeResponse.RequestId, getAccountsDetailResult.RequestId);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
@@ -309,17 +343,21 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsDetailResult getAccountsDetailResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, false, null, null, null, null, null);
+                getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, false, null, null, null, null, null);
+            }
 
-            Assert.Null(getAccountsDetailResult.Accounts[0].AccountNumber);
-            Assert.Null(getAccountsDetailResult.Accounts[0].InstitutionNumber);
-            Assert.Null(getAccountsDetailResult.Accounts[0].TransitNumber);
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].AccountNumber);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].InstitutionNumber);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].TransitNumber);
+            Assert.Equal(authorizeResponse.RequestId, getAccountsDetailResult?.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -336,15 +374,19 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsDetailResult getAccountsDetailResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, false, null, null, null, null);
+                getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, false, null, null, null, null);
+            }
 
-            Assert.Null(getAccountsDetailResult.Accounts[0].Holder);
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].Holder);
+            Assert.Equal(authorizeResponse.RequestId, getAccountsDetailResult?.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -361,14 +403,18 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsDetailResult getAccountsDetailResult = null;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, false, null, null, null);
+                getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, false, null, null, null);
+            }
 
             Assert.Empty(getAccountsDetailResult.Accounts[0].Transactions);
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
+            Assert.Equal(authorizeResponse.RequestId, getAccountsDetailResult.RequestId);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
@@ -386,17 +432,20 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsDetailResult getAccountsDetailResult = null;
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+                getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, false, null, null);
+            }
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, false, null, null);
-
-            Assert.Null(getAccountsDetailResult.Accounts[0].Balance.Available);
-            Assert.Null(getAccountsDetailResult.Accounts[0].Balance.Current);
-            Assert.Null(getAccountsDetailResult.Accounts[0].Balance.Limit);
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].Balance.Available);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].Balance.Current);
+            Assert.Null(getAccountsDetailResult?.Accounts[0].Balance.Limit);
+            Assert.Equal(authorizeResponse.RequestId, getAccountsDetailResult?.RequestId);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -413,11 +462,9 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
-
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, DaysOfTransaction.Days90, null);
+            var getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, null, DaysOfTransaction.Days90, null);
 
 
             var apiClient2 = new FlinksClient(CustomerId, Endpoint);
@@ -429,18 +476,22 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse2.SecurityChallenges);
             }
 
-            var requestId2 = new Guid(authorizeResponse2.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult2 = null;
+            AccountsDetailResult getAccountsDetailResult2 = null;
 
-            var answerMfaQuestionsAndAuthorizeResult2 = apiClient2.AnswerMfaQuestionsAndAuthorize(requestId2, authorizeResponse2.SecurityChallenges);
+            if (authorizeResponse2.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult2 = apiClient2.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse2.RequestId, authorizeResponse2.SecurityChallenges);
 
-            var getAccountsDetailResult2 = apiClient2.GetAccountDetails(requestId2, null, null, null, null, DaysOfTransaction.Days365, null);
+                getAccountsDetailResult2 = apiClient2.GetAccountDetails((Guid)authorizeResponse2.RequestId, null, null, null, null, DaysOfTransaction.Days365, null);
+            }
 
             Assert.NotEmpty(getAccountsDetailResult.Accounts[0].Transactions);
             Assert.NotEmpty(getAccountsDetailResult2.Accounts[0].Transactions);
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
-            Assert.Equal(requestId2.ToString(), getAccountsDetailResult2.RequestId);
+            Assert.Equal(authorizeResponse.RequestId, getAccountsDetailResult.RequestId);
+            Assert.Equal(authorizeResponse2.RequestId, getAccountsDetailResult2.RequestId);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult2.HttpStatusCode);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult2?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient2.ClientStatus);
         }
@@ -460,42 +511,47 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
-
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
-
-            var getAccountSummaryResult = apiClient.GetAccountSummary(requestId);
-
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
             AccountsDetailResult getAccountsDetailResponseWithAccountFilterResult = null;
 
-            if (getAccountSummaryResult != null)
+            if (authorizeResponse.RequestId != null)
             {
-                var accountId = (Guid)getAccountSummaryResult.Accounts.First().Id;
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-                var apiClientForAccountFilter = new FlinksClient(CustomerId, Endpoint);
+                var getAccountSummaryResult = apiClient.GetAccountSummary((Guid)authorizeResponse.RequestId);
 
-                var authorizeResponseForAccountFilter = apiClientForAccountFilter.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
-
-                if (authorizeResponseForAccountFilter.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+                if (getAccountSummaryResult != null)
                 {
-                    AnswerMfaQuestion(authorizeResponseForAccountFilter.SecurityChallenges);
-                }
+                    var accountId = (Guid)getAccountSummaryResult.Accounts.First().Id;
 
-                var requestIdForAccountFilter = new Guid(authorizeResponseForAccountFilter.RequestId);
+                    var apiClientForAccountFilter = new FlinksClient(CustomerId, Endpoint);
 
-                apiClientForAccountFilter.AnswerMfaQuestionsAndAuthorize(requestIdForAccountFilter, authorizeResponseForAccountFilter.SecurityChallenges);
+                    var authorizeResponseForAccountFilter = apiClientForAccountFilter.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
 
-                getAccountsDetailResponseWithAccountFilterResult = apiClientForAccountFilter.GetAccountDetails(
-                    requestIdForAccountFilter, 
-                    null, 
-                    null, 
-                    null, 
-                    null, 
-                    null, 
-                    new List<Guid>()
+                    if (authorizeResponseForAccountFilter.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
                     {
-                        accountId
-                    });
+                        AnswerMfaQuestion(authorizeResponseForAccountFilter.SecurityChallenges);
+                    }
+
+                    if (authorizeResponseForAccountFilter.RequestId != null)
+                    {
+                        apiClientForAccountFilter.AnswerMfaQuestionsAndAuthorize(
+                            (Guid)authorizeResponseForAccountFilter.RequestId,
+                            authorizeResponseForAccountFilter.SecurityChallenges);
+
+                        getAccountsDetailResponseWithAccountFilterResult = apiClientForAccountFilter.GetAccountDetails(
+                            (Guid)authorizeResponseForAccountFilter.RequestId,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            new List<Guid>()
+                            {
+                                accountId
+                            });
+                    }
+                }
             }
 
             Assert.True(getAccountsDetailResponseWithAccountFilterResult?.Accounts.Count < 2);
@@ -518,20 +574,23 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            AccountsDetailResult getAccountsDetailResult = null;
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+                apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, null, null, null);
 
-            apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
+                getAccountsDetailResult = apiClient.GetAccountDetailsAsync((Guid)authorizeResponse.RequestId);
+            }
 
-            var getAccountsDetailResult = apiClient.GetAccountDetailsAsync(requestId);
-
-            Assert.NotNull(getAccountsDetailResult.Accounts);
+            Assert.NotNull(getAccountsDetailResult?.Accounts);
             if (save != null && (bool)save)
             {
                 Assert.NotNull(getAccountsDetailResult.Login);
             }
-            Assert.Equal(requestId.ToString(), getAccountsDetailResult.RequestId);
+            Assert.Equal((Guid)authorizeResponse.RequestId, getAccountsDetailResult.RequestId);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
@@ -571,13 +630,16 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            StatementResult statementResult = null;
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+                statementResult = apiClient.GetStatements((Guid)authorizeResponse.RequestId, null, null);
+            }
 
-            var statementResult = apiClient.GetStatements(requestId, null, null);
-
-            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.NotNull(statementResult?.StatementsByAccount);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
@@ -595,17 +657,18 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            StatementResult statementResult = null;
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+                statementResult = apiClient.GetStatements((Guid)authorizeResponse.RequestId, NumberOfStatements.Months3, null);
+            }
 
-
-            var statementResult = apiClient.GetStatements(requestId, NumberOfStatements.Months3, null);
-
-
-            Assert.Equal(3, statementResult.StatementsByAccount[0].Statements.Count);
-            Assert.Equal(3, statementResult.StatementsByAccount[1].Statements.Count);
-            Assert.NotNull(statementResult.StatementsByAccount);
+            Assert.Equal(3, statementResult?.StatementsByAccount[0].Statements.Count);
+            Assert.Equal(3, statementResult?.StatementsByAccount[1].Statements.Count);
+            Assert.NotNull(statementResult?.StatementsByAccount);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
@@ -623,11 +686,14 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            if (authorizeResponse.RequestId != null)
+            {
+                var answerMfaQuestionsAndAuthorizeResult =
+                    apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId,
+                        authorizeResponse.SecurityChallenges);
+            }
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
-
-            var getSummaryResult = apiClient.GetAccountSummary(requestId);
+            var getSummaryResult = apiClient.GetAccountSummary((Guid)authorizeResponse.RequestId);
 
             var searchedAccount = getSummaryResult.Accounts.First().Id;
 
@@ -660,37 +726,43 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
-
-            apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
-
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null);
-
-            var firstAccountId = getAccountsDetailResult?.Accounts?.FirstOrDefault()?.Id;
-
             StatementResult statementResult = null;
-
-            if (firstAccountId != null)
+            if (authorizeResponse.RequestId != null)
             {
-                var accountId = (Guid) firstAccountId;
+                apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId,
+                    authorizeResponse.SecurityChallenges);
 
-                var apiClientForStatement = new FlinksClient(CustomerId, Endpoint);
+                var getAccountsDetailResult =
+                    apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, null, null);
 
-                var authorizeResponseForStatement = apiClientForStatement.Authorize(institution, userName, password, save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+                var firstAccountId = getAccountsDetailResult?.Accounts?.FirstOrDefault()?.Id;
 
-                if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+                if (firstAccountId != null)
                 {
-                    AnswerMfaQuestion(authorizeResponseForStatement.SecurityChallenges);
+                    var accountId = (Guid)firstAccountId;
+
+                    var apiClientForStatement = new FlinksClient(CustomerId, Endpoint);
+
+                    var authorizeResponseForStatement = apiClientForStatement.Authorize(institution, userName, password,
+                        save, mostRecentCached, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+                    if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
+                    {
+                        AnswerMfaQuestion(authorizeResponseForStatement.SecurityChallenges);
+                    }
+
+                    if (authorizeResponseForStatement.RequestId != null)
+                    {
+                        apiClientForStatement.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponseForStatement.RequestId, authorizeResponseForStatement.SecurityChallenges);
+
+                        statementResult = apiClientForStatement.GetStatements(
+                            (Guid)authorizeResponseForStatement.RequestId,
+                            NumberOfStatements.Months12, new List<Guid>()
+                            {
+                                accountId
+                            });
+                    }
                 }
-
-                var requestIdForStatements = new Guid(authorizeResponseForStatement.RequestId);
-
-                apiClientForStatement.AnswerMfaQuestionsAndAuthorize(requestIdForStatements, authorizeResponseForStatement.SecurityChallenges);
-
-                statementResult = apiClientForStatement.GetStatements(requestIdForStatements, NumberOfStatements.Months12, new List<Guid>()
-                {
-                    accountId
-                });
             }
 
             Assert.Equal(12, statementResult?.StatementsByAccount.FirstOrDefault()?.Statements.Count);
@@ -698,7 +770,7 @@ namespace Flinks.CSharp.SDK.Test
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
-       
+
 
 
         [Theory(Skip = "On Sandbox this feature is disabled.")]
@@ -715,11 +787,11 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            var requestId = new Guid();
 
-            apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null);
+            var getAccountsDetailResult = apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, null, null);
 
             var firstAccountId = getAccountsDetailResult?.Accounts?.FirstOrDefault()?.Id;
 
@@ -738,14 +810,17 @@ namespace Flinks.CSharp.SDK.Test
                     AnswerMfaQuestion(authorizeResponseForStatement.SecurityChallenges);
                 }
 
-                var requestIdForStatements = new Guid(authorizeResponseForStatement.RequestId);
-
-                apiClientForStatement.AnswerMfaQuestionsAndAuthorize(requestIdForStatements, authorizeResponseForStatement.SecurityChallenges);
-
-                statementResult = apiClientForStatement.GetStatements(requestIdForStatements, null, new List<Guid>()
+                if (authorizeResponseForStatement.RequestId != null)
                 {
-                    accountId
-                });
+                    apiClientForStatement.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponseForStatement.RequestId,
+                        authorizeResponseForStatement.SecurityChallenges);
+
+                    statementResult = apiClientForStatement.GetStatements(
+                        (Guid)authorizeResponseForStatement.RequestId, null, new List<Guid>()
+                        {
+                            accountId
+                        });
+                }
             }
 
             //Assert.Equal(12, statementResult.StatementsByAccount.FirstOrDefault()?.Statements.Count);
@@ -769,16 +844,19 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+                var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
 
-            var getAccountsDetailResult = apiClient.SetScheduledRefresh(loginId, true);
+                var getAccountsDetailResult = apiClient.SetScheduledRefresh(loginId, true);
 
-            Assert.Contains($"{loginId} has now been activated for automatic refresh", getAccountsDetailResult);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+                Assert.Contains($"{loginId} has now been activated for automatic refresh", getAccountsDetailResult);
+                Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            }
+
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -797,13 +875,18 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            var scheduledRefreshResult = string.Empty;
+            var loginId = Guid.Empty;
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+                loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
 
-            var scheduledRefreshResult = apiClient.SetScheduledRefresh(loginId, false);
+                scheduledRefreshResult = apiClient.SetScheduledRefresh(loginId, false);
+            }
 
             Assert.Contains($"{loginId} has now been deactivated for automatic refresh", scheduledRefreshResult);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
@@ -825,18 +908,22 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
+            var loginId = Guid.Empty;
+            DeleteCardResult deleteCardResult = null;
+            if (authorizeResponse.RequestId != null)
+            {
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+                apiClient.GetAccountDetails((Guid)authorizeResponse.RequestId, null, null, null, null, null, null);
 
-            var getAccountsDetailResult = apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
+                loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
 
-            var loginId = new Guid(answerMfaQuestionsAndAuthorizeResult.Login.Id);
+                deleteCardResult = apiClient.DeleteCard(loginId);
+            }
 
-            var deleteCardResult = apiClient.DeleteCard(loginId);
-
-            Assert.Equal($"All of the information about LoginId {loginId} has been removed", deleteCardResult.Message);
-            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
+            Assert.Equal($"All of the information about LoginId {loginId} has been removed", deleteCardResult?.Message);
+            Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult?.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
 
@@ -853,44 +940,51 @@ namespace Flinks.CSharp.SDK.Test
                 AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
             }
 
-            var requestId = new Guid(authorizeResponse.RequestId);
+            var requestId = new Guid();
 
-            var answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
+            ScoreResult scoreResult = null;
+            AuthorizeResult answerMfaQuestionsAndAuthorizeResult = null;
 
-            apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
-
-            var authorizeResponseInCachedMode = apiClient.Authorize(institution, userName, password, null, true, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
-
-            var scoreRequestId = new Guid(authorizeResponseInCachedMode.RequestId);
-
-            var loginId = new Guid(authorizeResponseInCachedMode.Login.Id);
-
-            var scoreRequestBody = new ScoreRequestBody()
+            if (authorizeResponse.RequestId != null)
             {
-                LoanAmount = "1000.00",
-                UserPersonalInformation = new UserPersonalInformation()
+                answerMfaQuestionsAndAuthorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize((Guid)authorizeResponse.RequestId, authorizeResponse.SecurityChallenges);
+
+                apiClient.GetAccountDetails(requestId, null, null, null, null, null, null);
+
+                var authorizeResponseInCachedMode = apiClient.Authorize(institution, userName, password, null, true, withMfaQuestions, requestLanguage, scheduleRefresh, tag);
+
+                var loginId = new Guid(authorizeResponseInCachedMode.Login.Id);
+
+                var scoreRequestBody = new ScoreRequestBody()
                 {
-                    FirstName = "Nicolas",
-                    LastName = "Jourdain",
-                    Sex = Sex.Male,
-                    BirthDate = "1988-08-14",
-                    Email = "nicolas.jourdain2@gmail.com",
-                    SocialInsuranceNumber = "123456789",
-                    Address = new Address()
+                    LoanAmount = "1000.00",
+                    UserPersonalInformation = new UserPersonalInformation()
                     {
-                        CivicAddress = "123 fake street",
-                        City = "Montreal",
-                        Province = "Quebec",
-                        PostalCode = "H0H0H0",
-                        Country = "Canada",
-                        PoBox = ""
+                        FirstName = "Nicolas",
+                        LastName = "Jourdain",
+                        Sex = Sex.Male,
+                        BirthDate = "1988-08-14",
+                        Email = "nicolas.jourdain2@gmail.com",
+                        SocialInsuranceNumber = "123456789",
+                        Address = new Address()
+                        {
+                            CivicAddress = "123 fake street",
+                            City = "Montreal",
+                            Province = "Quebec",
+                            PostalCode = "H0H0H0",
+                            Country = "Canada",
+                            PoBox = ""
+                        }
                     }
+                };
+
+                if (authorizeResponseInCachedMode.RequestId != null)
+                {
+                    scoreResult = apiClient.GetScore(loginId, (Guid)authorizeResponseInCachedMode.RequestId, scoreRequestBody);
                 }
-            };
+            }
 
-            var scoreResult = apiClient.GetScore(loginId, scoreRequestId, scoreRequestBody);
-
-            Assert.NotNull(scoreResult.Score);
+            Assert.NotNull(scoreResult?.Score);
             Assert.Equal(200, answerMfaQuestionsAndAuthorizeResult.HttpStatusCode);
             Assert.Equal(ClientStatus.AUTHORIZED, apiClient.ClientStatus);
         }
