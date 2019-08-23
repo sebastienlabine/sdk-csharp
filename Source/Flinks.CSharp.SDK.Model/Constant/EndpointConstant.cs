@@ -15,6 +15,7 @@ namespace Flinks.CSharp.SDK.Model.Constant
         public const string SetScheduledRefresh = "BankingServices/SetScheduledRefresh";
         public const string DeleteCard = "BankingServices/DeleteCard";
         public const string GetScore = "Insight/login/{LoginId}/score/{RequestId}";
+        public const string GetAttribute = "Insight/login/{LoginId}/attributes/{RequestId}";
         public const string GenerateAuthorizeToken = "BankingServices/GenerateAuthorizeToken";
     }
 }
