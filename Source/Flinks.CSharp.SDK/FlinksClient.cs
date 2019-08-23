@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Flinks.CSharp.SDK.Model.Attributes;
 using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Constant;
 using Flinks.CSharp.SDK.Model.DeleteCard;
@@ -21,7 +22,7 @@ using static System.Net.HttpStatusCode;
 namespace Flinks.CSharp.SDK
 {
     public class FlinksClient
-    {
+    { 
         private string CustomerId { get; }
         private string Instance { get; }
         private string BaseUrl => GetBaseUrl();
@@ -353,6 +354,29 @@ namespace Flinks.CSharp.SDK
             var response = RestClient.Execute(request);
 
             var apiResponse = JsonConvert.DeserializeObject<ScoreResult>(response.Content);
+
+            return apiResponse;
+        }
+
+
+        /// <summary>
+        ///  Retrieves Attributes calculation based on the transactions retrieved from the previous GetAccountsDetail call
+        /// </summary>
+        /// <param name="loginId">The LoginId of the previous authentication.</param>
+        /// <param name="requestId">The RequestId of the previous Authorize call.</param>
+        /// <param name="attributeRequestBody">The attributes information used to configure it's response.</param>
+        /// <returns>An attributes object with the processed attributes based on unser's input.</returns>
+        public AttributeResult GetAttributes(Guid loginId, Guid requestId, AttributeRequestBody attributeRequestBody)
+        {
+            var attributesUrl = EndpointConstant.GetAttribute;
+            attributesUrl = attributesUrl.Replace(FlinksSettingsConstant.LoginId, loginId.ToString()).Replace(FlinksSettingsConstant.RequestId, requestId.ToString());
+
+            var request = GetBaseRequest(attributesUrl, Method.POST);
+            request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(attributeRequestBody, _jsonSerializationSettings), ParameterType.RequestBody);
+
+            var response = RestClient.Execute(request);
+
+            var apiResponse = JsonConvert.DeserializeObject<AttributeResult>(response.Content);
 
             return apiResponse;
         }
