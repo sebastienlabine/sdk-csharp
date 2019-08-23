@@ -1,4 +1,7 @@
-﻿using System;
+﻿// - This Source Code Form is subject to the terms of the Mozilla Public
+// - License, v. 2.0. If a copy of the MPL was not distributed with this
+// - file, You can obtain one at https://mozilla.org/MPL/2.0/.
+using System;
 using System.Collections.Generic;
 using Flinks.CSharp.SDK.Model.Authorize;
 using Flinks.CSharp.SDK.Model.Enums;
@@ -82,33 +85,5 @@ namespace Flinks.CSharp.SDK.Test
 
             return false;
         }
-
-        public Tuple<Guid, FlinksClient> AuthorizeFlow(
-            string institution, 
-            string userName, 
-            string password, 
-            bool? mostRecentCached, 
-            bool? withMfaQuestions, 
-            RequestLanguage? requestLanguage, 
-            bool? scheduleRefresh, 
-            string tag)
-        {
-            var apiClient = new FlinksClient(CustomerId, Endpoint);
-
-            var authorizeResponse = apiClient.Authorize(institution, userName, password, false, mostRecentCached,
-                withMfaQuestions, requestLanguage, scheduleRefresh, tag);
-
-            if (authorizeResponse.ClientStatus == ClientStatus.PENDING_MFA_ANSWERS)
-            {
-                AnswerMfaQuestion(authorizeResponse.SecurityChallenges);
-            }
-
-            var requestId = new Guid(authorizeResponse.RequestId);
-
-            var authorizeResult = apiClient.AnswerMfaQuestionsAndAuthorize(requestId, authorizeResponse.SecurityChallenges);
-
-            return new Tuple<Guid, FlinksClient>(new Guid(authorizeResult.RequestId), apiClient);
-        }
-
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// - This Source Code Form is subject to the terms of the Mozilla Public
+// - License, v. 2.0. If a copy of the MPL was not distributed with this
+// - file, You can obtain one at https://mozilla.org/MPL/2.0/.
+using System;
 using System.Collections.Generic;
 using System.Net;
 using Flinks.CSharp.SDK.Model.Authorize;
@@ -132,7 +135,7 @@ namespace Flinks.CSharp.SDK
 
             AuthorizeBody = new AuthorizeRequestBody()
             {
-                RequestId = requestId.ToString(),
+                RequestId = requestId,
                 SecurityResponses = mfaAnswers
             };
 
@@ -184,7 +187,7 @@ namespace Flinks.CSharp.SDK
             var request = GetBaseRequest(EndpointConstant.GetAccountsSummary, Method.POST);
             request.AddParameter(FlinksSettingsConstant.ApplicationJsonUTF8, JsonConvert.SerializeObject(new AuthorizeRequestBody()
             {
-                RequestId = requestId.ToString()
+                RequestId = requestId
             }, _jsonSerializationSettings), ParameterType.RequestBody);
 
             var response = RestClient.Execute(request);
