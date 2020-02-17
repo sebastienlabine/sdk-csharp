@@ -3,7 +3,7 @@
 // - file, You can obtain one at https://mozilla.org/MPL/2.0/.
 namespace Flinks.CSharp.SDK.Model.Enums
 {
-    public static class Institution
+    public class Institution
     {
         public const string ATB = "ATB";
         public const string BMO = "BMO";
